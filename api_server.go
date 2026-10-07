@@ -18,31 +18,9 @@ func (c *Client) DeliverMessage(ctx context.Context, m *Message) (*MessageRespon
 	return do[MessageResponse](ctx, c.base, http.MethodPost, "/email", nil, m)
 }
 
-// DeliverMessages отправляет пакет писем. Результат по каждому письму —
-// в соответствующем элементе ответа (проверяйте ErrorCode).
-func (c *Client) DeliverMessages(ctx context.Context, ms []Message) ([]MessageResponse, error) {
-	r, err := do[[]MessageResponse](ctx, c.base, http.MethodPost, "/email/batch", nil, ms)
-	if err != nil {
-		return nil, err
-	}
-	return *r, nil
-}
-
 // DeliverMessageWithTemplate отправляет письмо по шаблону.
 func (c *Client) DeliverMessageWithTemplate(ctx context.Context, m *TemplatedMessage) (*MessageResponse, error) {
 	return do[MessageResponse](ctx, c.base, http.MethodPost, "/email/withTemplate", nil, m)
-}
-
-// DeliverMessagesWithTemplate отправляет пакет писем по шаблонам.
-func (c *Client) DeliverMessagesWithTemplate(ctx context.Context, ms []TemplatedMessage) ([]MessageResponse, error) {
-	body := struct {
-		Messages []TemplatedMessage `json:"Messages"`
-	}{ms}
-	r, err := do[[]MessageResponse](ctx, c.base, http.MethodPost, "/email/batchWithTemplates", nil, body)
-	if err != nil {
-		return nil, err
-	}
-	return *r, nil
 }
 
 // ========== Отказы доставки ==========
@@ -50,16 +28,6 @@ func (c *Client) DeliverMessagesWithTemplate(ctx context.Context, ms []Templated
 // GetBounces возвращает список отказов. Обычно требуются параметры count и offset.
 func (c *Client) GetBounces(ctx context.Context, p *Params) (*Bounces, error) {
 	return do[Bounces](ctx, c.base, http.MethodGet, "/bounces", p, nil)
-}
-
-// GetBounce возвращает отказ по ID.
-func (c *Client) GetBounce(ctx context.Context, id int64) (*Bounce, error) {
-	return do[Bounce](ctx, c.base, http.MethodGet, "/bounces/"+itoa(id), nil, nil)
-}
-
-// ActivateBounce повторно активирует адрес после отказа.
-func (c *Client) ActivateBounce(ctx context.Context, id int64) (*Bounce, error) {
-	return do[Bounce](ctx, c.base, http.MethodPut, "/bounces/"+itoa(id)+"/activate", nil, nil)
 }
 
 // GetDeliveryStats возвращает сводку по доставке.
@@ -168,24 +136,9 @@ func (c *Client) GetOpenStats(ctx context.Context, p *Params) (*OutboundOpenStat
 	return do[OutboundOpenStats](ctx, c.base, http.MethodGet, "/stats/opens", p, nil)
 }
 
-// GetOpenPlatformStats возвращает открытия по платформам.
-func (c *Client) GetOpenPlatformStats(ctx context.Context, p *Params) (*OutboundOpenPlatformStats, error) {
-	return do[OutboundOpenPlatformStats](ctx, c.base, http.MethodGet, "/stats/opens/platforms", p, nil)
-}
-
 // GetClickStats возвращает клики по дням.
 func (c *Client) GetClickStats(ctx context.Context, p *Params) (*OutboundClickStats, error) {
 	return do[OutboundClickStats](ctx, c.base, http.MethodGet, "/stats/clicks", p, nil)
-}
-
-// GetClickLocationStats возвращает клики по расположению (HTML/текст).
-func (c *Client) GetClickLocationStats(ctx context.Context, p *Params) (*OutboundClickLocationStats, error) {
-	return do[OutboundClickLocationStats](ctx, c.base, http.MethodGet, "/stats/clicks/location", p, nil)
-}
-
-// GetClickPlatformStats возвращает клики по платформам.
-func (c *Client) GetClickPlatformStats(ctx context.Context, p *Params) (*OutboundClickPlatformStats, error) {
-	return do[OutboundClickPlatformStats](ctx, c.base, http.MethodGet, "/stats/clicks/platforms", p, nil)
 }
 
 // ========== Вебхуки ==========

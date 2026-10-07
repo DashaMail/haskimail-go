@@ -19,6 +19,13 @@ type OutboundStats struct {
 	WithPlatformRecorded  int     `json:"WithPlatformRecorded"`
 	WithReadTimeRecorded  int     `json:"WithReadTimeRecorded"`
 	SpamComplaints        int     `json:"SpamComplaints"`
+	// Opened и Clicked — открытия и клики за период, включая повторные.
+	Opened  int `json:"Opened"`
+	Clicked int `json:"Clicked"`
+	// Unsubscribed — адресов, отписавшихся за период (в API поле называется Unsubsribed).
+	Unsubscribed int     `json:"Unsubsribed"`
+	OpenRate     float64 `json:"OpenRate"`
+	ClickRate    float64 `json:"ClickRate"`
 }
 
 // SentStat — отправлено за день.
@@ -52,27 +59,11 @@ type OpenStat struct {
 	Unique int   `json:"Unique"`
 }
 
-// PlatformStat — распределение по платформам за день.
-type PlatformStat struct {
-	Date    *Time `json:"Date"`
-	Desktop int   `json:"Desktop"`
-	Mobile  int   `json:"Mobile"`
-	Webmail int   `json:"Webmail"`
-	Unknown int   `json:"Unknown"`
-}
-
 // ClickStat — клики за день.
 type ClickStat struct {
 	Date   *Time `json:"Date"`
 	Clicks int   `json:"Clicks"`
 	Unique int   `json:"Unique"`
-}
-
-// ClickLocationStat — клики в HTML- и текстовой версии за день.
-type ClickLocationStat struct {
-	Date *Time `json:"Date"`
-	HTML int   `json:"Html"`
-	Text int   `json:"Text"`
 }
 
 // DayStats — статистика с разбивкой по дням.
@@ -82,12 +73,9 @@ type DayStats[T any] struct {
 
 // Псевдонимы для конкретных видов статистики.
 type (
-	OutboundSendStats          = DayStats[SentStat]
-	OutboundBounceStats        = DayStats[BounceStat]
-	OutboundSpamStats          = DayStats[SpamStat]
-	OutboundOpenStats          = DayStats[OpenStat]
-	OutboundOpenPlatformStats  = DayStats[PlatformStat]
-	OutboundClickStats         = DayStats[ClickStat]
-	OutboundClickLocationStats = DayStats[ClickLocationStat]
-	OutboundClickPlatformStats = DayStats[PlatformStat]
+	OutboundSendStats   = DayStats[SentStat]
+	OutboundBounceStats = DayStats[BounceStat]
+	OutboundSpamStats   = DayStats[SpamStat]
+	OutboundOpenStats   = DayStats[OpenStat]
+	OutboundClickStats  = DayStats[ClickStat]
 )

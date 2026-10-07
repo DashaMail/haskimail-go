@@ -54,11 +54,6 @@ func (c *AccountClient) CreateDomain(ctx context.Context, d *Domain) (*DomainDet
 	return do[DomainDetails](ctx, c.base, http.MethodPost, "/domains", nil, d)
 }
 
-// SetDomain изменяет домен.
-func (c *AccountClient) SetDomain(ctx context.Context, id int64, d *Domain) (*DomainDetails, error) {
-	return do[DomainDetails](ctx, c.base, http.MethodPut, "/domains/"+itoa(id), nil, d)
-}
-
 // DeleteDomain удаляет домен.
 func (c *AccountClient) DeleteDomain(ctx context.Context, id int64) (*RequestResponse, error) {
 	return do[RequestResponse](ctx, c.base, http.MethodDelete, "/domains/"+itoa(id), nil, nil)
@@ -72,48 +67,6 @@ func (c *AccountClient) VerifyDomainSPF(ctx context.Context, id int64) (*DomainD
 // VerifyDomainDKIM проверяет DKIM-запись домена.
 func (c *AccountClient) VerifyDomainDKIM(ctx context.Context, id int64) (*DomainDetails, error) {
 	return do[DomainDetails](ctx, c.base, http.MethodPut, "/domains/"+itoa(id)+"/verifyDkim", nil, nil)
-}
-
-// ========== Подписи отправителей ==========
-
-// GetSenderSignatures возвращает список подписей.
-func (c *AccountClient) GetSenderSignatures(ctx context.Context, p *Params) (*Signatures, error) {
-	return do[Signatures](ctx, c.base, http.MethodGet, "/senders", p, nil)
-}
-
-// GetSenderSignatureDetails возвращает подробности подписи.
-func (c *AccountClient) GetSenderSignatureDetails(ctx context.Context, id int64) (*SignatureDetails, error) {
-	return do[SignatureDetails](ctx, c.base, http.MethodGet, "/senders/"+itoa(id), nil, nil)
-}
-
-// CreateSenderSignature создаёт подпись.
-func (c *AccountClient) CreateSenderSignature(ctx context.Context, s *SignatureToCreate) (*SignatureDetails, error) {
-	return do[SignatureDetails](ctx, c.base, http.MethodPost, "/senders", nil, s)
-}
-
-// SetSenderSignature изменяет подпись.
-func (c *AccountClient) SetSenderSignature(ctx context.Context, id int64, s *SignatureToCreate) (*SignatureDetails, error) {
-	return do[SignatureDetails](ctx, c.base, http.MethodPut, "/senders/"+itoa(id), nil, s)
-}
-
-// DeleteSenderSignature удаляет подпись.
-func (c *AccountClient) DeleteSenderSignature(ctx context.Context, id int64) (*RequestResponse, error) {
-	return do[RequestResponse](ctx, c.base, http.MethodDelete, "/senders/"+itoa(id), nil, nil)
-}
-
-// ResendSenderSignatureConfirmation повторно отправляет письмо подтверждения.
-func (c *AccountClient) ResendSenderSignatureConfirmation(ctx context.Context, id int64) (*RequestResponse, error) {
-	return do[RequestResponse](ctx, c.base, http.MethodPost, "/senders/"+itoa(id)+"/resend", nil, nil)
-}
-
-// VerifySenderSignatureSPF проверяет SPF подписи.
-func (c *AccountClient) VerifySenderSignatureSPF(ctx context.Context, id int64) (*SignatureDetails, error) {
-	return do[SignatureDetails](ctx, c.base, http.MethodPost, "/senders/"+itoa(id)+"/verifyspf", nil, nil)
-}
-
-// RequestNewSenderSignatureDKIM запрашивает новый DKIM-ключ для подписи.
-func (c *AccountClient) RequestNewSenderSignatureDKIM(ctx context.Context, id int64) (*RequestResponse, error) {
-	return do[RequestResponse](ctx, c.base, http.MethodPost, "/senders/"+itoa(id)+"/requestnewdkim", nil, nil)
 }
 
 // ========== Пуш шаблонов ==========

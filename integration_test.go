@@ -151,16 +151,8 @@ func TestIntegrationServerRead(t *testing.T) {
 		b, err := c.GetBounces(ctxT(t), page())
 		b = must(t, e, b, err)
 		t.Logf("отказов всего: %d", b.TotalCount)
-		if len(b.Bounces) > 0 {
-			id := b.Bounces[0].ID
-			bb, err := c.GetBounce(ctxT(t), id)
-			bb = must(t, e, bb, err)
-			if bb.ID != id {
-				t.Errorf("GetBounce вернул ID %d, ожидался %d", bb.ID, id)
-			}
-			if bb.BouncedAt == nil {
-				t.Error("BouncedAt не разобран")
-			}
+		if len(b.Bounces) > 0 && b.Bounces[0].BouncedAt == nil {
+			t.Error("BouncedAt не разобран")
 		}
 	})
 	t.Run("MessageStreams", func(t *testing.T) {
@@ -215,19 +207,7 @@ func TestIntegrationServerRead(t *testing.T) {
 		"Bounces":  func(t *testing.T, ctx context.Context) { v, err := c.GetBounceStats(ctx, nil); must(t, e, v, err) },
 		"Spam":     func(t *testing.T, ctx context.Context) { v, err := c.GetSpamStats(ctx, nil); must(t, e, v, err) },
 		"Opens":    func(t *testing.T, ctx context.Context) { v, err := c.GetOpenStats(ctx, nil); must(t, e, v, err) },
-		"OpenPlatforms": func(t *testing.T, ctx context.Context) {
-			v, err := c.GetOpenPlatformStats(ctx, nil)
-			must(t, e, v, err)
-		},
-		"Clicks": func(t *testing.T, ctx context.Context) { v, err := c.GetClickStats(ctx, nil); must(t, e, v, err) },
-		"ClickLocation": func(t *testing.T, ctx context.Context) {
-			v, err := c.GetClickLocationStats(ctx, nil)
-			must(t, e, v, err)
-		},
-		"ClickPlatforms": func(t *testing.T, ctx context.Context) {
-			v, err := c.GetClickPlatformStats(ctx, nil)
-			must(t, e, v, err)
-		},
+		"Clicks":   func(t *testing.T, ctx context.Context) { v, err := c.GetClickStats(ctx, nil); must(t, e, v, err) },
 	}
 	for name, call := range stats {
 		t.Run("Stats/"+name, func(t *testing.T) { call(t, ctxT(t)) })
@@ -379,23 +359,6 @@ func TestIntegrationSend(t *testing.T) {
 		r = must(t, e, r, err)
 		t.Logf("MessageID=%s", r.MessageID)
 	})
-
-	t.Run("Batch", func(t *testing.T) {
-		rs, err := c.DeliverMessages(ctxT(t), []Message{
-			{From: e.sender, To: e.recipient, Subject: "Go SDK: пакет 1", TextBody: "1"},
-			{From: e.sender, To: e.recipient, Subject: "Go SDK: пакет 2", TextBody: "2"},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		checkModel[MessageResponse](t, e.rec)
-		if len(rs) != 2 {
-			t.Fatalf("ожидалось 2 результата, получено %d", len(rs))
-		}
-		for i, r := range rs {
-			t.Logf("[%d] код %d, %s", i, r.ErrorCode, r.MessageID)
-		}
-	})
 }
 
 // ===== API аккаунта: только чтение =====
@@ -421,14 +384,6 @@ func TestIntegrationAccountRead(t *testing.T) {
 		d = must(t, e, d, err)
 		if len(d.Domains) > 0 {
 			one, err := a.GetDomainDetails(ctxT(t), d.Domains[0].ID)
-			must(t, e, one, err)
-		}
-	})
-	t.Run("Senders", func(t *testing.T) {
-		s, err := a.GetSenderSignatures(ctxT(t), page())
-		s = must(t, e, s, err)
-		if len(s.SenderSignatures) > 0 {
-			one, err := a.GetSenderSignatureDetails(ctxT(t), s.SenderSignatures[0].ID)
 			must(t, e, one, err)
 		}
 	})

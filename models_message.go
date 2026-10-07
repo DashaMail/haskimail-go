@@ -10,12 +10,19 @@ import (
 	"strings"
 )
 
-// Режимы отслеживания ссылок (поле TrackLinks).
+// Режимы отслеживания ссылок (поле TrackLinks). В письме None выключает
+// отслеживание, любое другое значение включает его. В настройках сервера
+// различаются все четыре: None, HtmlAndText, HtmlOnly, TextOnly.
 const (
 	TrackLinksNone        = "None"
-	TrackLinksHTML        = "Html"
 	TrackLinksHTMLAndText = "HtmlAndText"
-	TrackLinksText        = "Text"
+	TrackLinksHTMLOnly    = "HtmlOnly"
+	TrackLinksTextOnly    = "TextOnly"
+
+	// Deprecated: используйте TrackLinksHTMLOnly. API принимает и это значение.
+	TrackLinksHTML = "Html"
+	// Deprecated: используйте TrackLinksTextOnly. API принимает и это значение.
+	TrackLinksText = "Text"
 )
 
 // Header — пользовательский заголовок письма.
@@ -93,7 +100,7 @@ func FormatRecipientsMap(m map[string]string) string {
 	return FormatRecipients(rs...)
 }
 
-// Message — письмо для отправки через /email и /email/batch.
+// Message — письмо для отправки через /email.
 type Message struct {
 	MessageStream string            `json:"MessageStream,omitempty"`
 	From          string            `json:"From,omitempty"`

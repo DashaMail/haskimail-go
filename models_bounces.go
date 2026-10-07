@@ -2,11 +2,12 @@ package haskimail
 
 // Bounce — отказ доставки.
 type Bounce struct {
-	ID            int64  `json:"ID"`
-	MessageID     string `json:"MessageID"`
-	ServerID      int64  `json:"ServerID"`
-	Type          string `json:"Type"`
-	TypeCode      int    `json:"TypeCode"`
+	ID        int64  `json:"ID"`
+	MessageID string `json:"MessageID"`
+	ServerID  int64  `json:"ServerID"`
+	Type      string `json:"Type"`
+	// TypeCode — код причины возврата; API отдаёт его строкой.
+	TypeCode      string `json:"TypeCode"`
 	BouncedAt     *Time  `json:"BouncedAt"`
 	DumpAvailable bool   `json:"DumpAvailable"`
 	Email         string `json:"Email"`

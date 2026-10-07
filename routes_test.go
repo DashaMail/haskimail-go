@@ -21,17 +21,11 @@ func TestAllRoutes(t *testing.T) {
 	routes := []route{
 		// Отправка
 		{"DeliverMessage", "POST", "/email", true, false, false, func(c *Client, _ *AccountClient) error { return e(c.DeliverMessage(ctx, &Message{From: "a"})) }},
-		{"DeliverMessages", "POST", "/email/batch", true, false, false, func(c *Client, _ *AccountClient) error { return e(c.DeliverMessages(ctx, []Message{{From: "a"}})) }},
 		{"DeliverMessageWithTemplate", "POST", "/email/withTemplate", true, false, false, func(c *Client, _ *AccountClient) error {
 			return e(c.DeliverMessageWithTemplate(ctx, &TemplatedMessage{TemplateID: 1}))
 		}},
-		{"DeliverMessagesWithTemplate", "POST", "/email/batchWithTemplates", true, false, false, func(c *Client, _ *AccountClient) error {
-			return e(c.DeliverMessagesWithTemplate(ctx, []TemplatedMessage{{TemplateID: 1}}))
-		}},
 		// Отказы
 		{"GetBounces", "GET", "/bounces", false, true, false, func(c *Client, _ *AccountClient) error { return e(c.GetBounces(ctx, p)) }},
-		{"GetBounce", "GET", "/bounces/5", false, false, false, func(c *Client, _ *AccountClient) error { return e(c.GetBounce(ctx, 5)) }},
-		{"ActivateBounce", "PUT", "/bounces/5/activate", false, false, false, func(c *Client, _ *AccountClient) error { return e(c.ActivateBounce(ctx, 5)) }},
 		{"GetDeliveryStats", "GET", "/deliverystats", false, false, false, func(c *Client, _ *AccountClient) error { return e(c.GetDeliveryStats(ctx)) }},
 		// Шаблоны
 		{"GetTemplate", "GET", "/templates/7", false, false, false, func(c *Client, _ *AccountClient) error { return e(c.GetTemplate(ctx, 7)) }},
@@ -57,10 +51,7 @@ func TestAllRoutes(t *testing.T) {
 		{"GetBounceStats", "GET", "/stats/bounces", false, true, false, func(c *Client, _ *AccountClient) error { return e(c.GetBounceStats(ctx, p)) }},
 		{"GetSpamStats", "GET", "/stats/spam", false, true, false, func(c *Client, _ *AccountClient) error { return e(c.GetSpamStats(ctx, p)) }},
 		{"GetOpenStats", "GET", "/stats/opens", false, true, false, func(c *Client, _ *AccountClient) error { return e(c.GetOpenStats(ctx, p)) }},
-		{"GetOpenPlatformStats", "GET", "/stats/opens/platforms", false, true, false, func(c *Client, _ *AccountClient) error { return e(c.GetOpenPlatformStats(ctx, p)) }},
 		{"GetClickStats", "GET", "/stats/clicks", false, true, false, func(c *Client, _ *AccountClient) error { return e(c.GetClickStats(ctx, p)) }},
-		{"GetClickLocationStats", "GET", "/stats/clicks/location", false, true, false, func(c *Client, _ *AccountClient) error { return e(c.GetClickLocationStats(ctx, p)) }},
-		{"GetClickPlatformStats", "GET", "/stats/clicks/platforms", false, true, false, func(c *Client, _ *AccountClient) error { return e(c.GetClickPlatformStats(ctx, p)) }},
 		// Вебхуки
 		{"GetWebhooks", "GET", "/webhooks", false, true, false, func(c *Client, _ *AccountClient) error { return e(c.GetWebhooks(ctx, p)) }},
 		{"GetWebhook", "GET", "/webhooks/3", false, false, false, func(c *Client, _ *AccountClient) error { return e(c.GetWebhook(ctx, 3)) }},
@@ -98,26 +89,9 @@ func TestAllRoutes(t *testing.T) {
 		{"GetDomains", "GET", "/domains", false, false, true, func(_ *Client, a *AccountClient) error { return e(a.GetDomains(ctx)) }},
 		{"GetDomainDetails", "GET", "/domains/4", false, false, true, func(_ *Client, a *AccountClient) error { return e(a.GetDomainDetails(ctx, 4)) }},
 		{"CreateDomain", "POST", "/domains", true, false, true, func(_ *Client, a *AccountClient) error { return e(a.CreateDomain(ctx, &Domain{Name: "d.ru"})) }},
-		{"SetDomain", "PUT", "/domains/4", true, false, true, func(_ *Client, a *AccountClient) error { return e(a.SetDomain(ctx, 4, &Domain{Name: "d.ru"})) }},
 		{"DeleteDomain", "DELETE", "/domains/4", false, false, true, func(_ *Client, a *AccountClient) error { return e(a.DeleteDomain(ctx, 4)) }},
 		{"VerifyDomainSPF", "PUT", "/domains/4/verifyspf", false, false, true, func(_ *Client, a *AccountClient) error { return e(a.VerifyDomainSPF(ctx, 4)) }},
 		{"VerifyDomainDKIM", "PUT", "/domains/4/verifyDkim", false, false, true, func(_ *Client, a *AccountClient) error { return e(a.VerifyDomainDKIM(ctx, 4)) }},
-		{"GetSenderSignatures", "GET", "/senders", false, true, true, func(_ *Client, a *AccountClient) error { return e(a.GetSenderSignatures(ctx, p)) }},
-		{"GetSenderSignatureDetails", "GET", "/senders/2", false, false, true, func(_ *Client, a *AccountClient) error { return e(a.GetSenderSignatureDetails(ctx, 2)) }},
-		{"CreateSenderSignature", "POST", "/senders", true, false, true, func(_ *Client, a *AccountClient) error {
-			return e(a.CreateSenderSignature(ctx, &SignatureToCreate{FromEmail: "a@b.ru"}))
-		}},
-		{"SetSenderSignature", "PUT", "/senders/2", true, false, true, func(_ *Client, a *AccountClient) error {
-			return e(a.SetSenderSignature(ctx, 2, &SignatureToCreate{Name: "n"}))
-		}},
-		{"DeleteSenderSignature", "DELETE", "/senders/2", false, false, true, func(_ *Client, a *AccountClient) error { return e(a.DeleteSenderSignature(ctx, 2)) }},
-		{"ResendSenderSignatureConfirmation", "POST", "/senders/2/resend", false, false, true, func(_ *Client, a *AccountClient) error {
-			return e(a.ResendSenderSignatureConfirmation(ctx, 2))
-		}},
-		{"VerifySenderSignatureSPF", "POST", "/senders/2/verifyspf", false, false, true, func(_ *Client, a *AccountClient) error { return e(a.VerifySenderSignatureSPF(ctx, 2)) }},
-		{"RequestNewSenderSignatureDKIM", "POST", "/senders/2/requestnewdkim", false, false, true, func(_ *Client, a *AccountClient) error {
-			return e(a.RequestNewSenderSignatureDKIM(ctx, 2))
-		}},
 		{"PushTemplates", "PUT", "/templates/push", true, false, true, func(_ *Client, a *AccountClient) error {
 			return e(a.PushTemplates(ctx, &TemplatesPushRequest{SourceServerID: 1, DestinationServerID: 2}))
 		}},
@@ -139,18 +113,13 @@ func TestAllRoutes(t *testing.T) {
 			}
 		}
 	}
-	if len(routes) != 66 {
-		t.Errorf("ожидалось 66 маршрутов (45 серверных + 21 аккаунта), в таблице %d", len(routes))
+	if len(routes) != 50 {
+		t.Errorf("ожидалось 50 маршрутов (38 серверных + 12 аккаунта), в таблице %d", len(routes))
 	}
 
 	for _, r := range routes {
 		t.Run(r.name, func(t *testing.T) {
-			// Ответ "{}" подходит для объектов; для пакетных методов нужен массив.
-			resp := `{}`
-			if r.name == "DeliverMessages" || r.name == "DeliverMessagesWithTemplate" {
-				resp = `[]`
-			}
-			srv, c := newTestServer(t, 200, resp)
+			srv, c := newTestServer(t, 200, `{}`)
 			cl := NewClient("srv-tok", WithBaseURL(host(srv)), WithInsecure())
 			ac := NewAccountClient("acc-tok", WithBaseURL(host(srv)), WithInsecure())
 			if err := r.call(cl, ac); err != nil {

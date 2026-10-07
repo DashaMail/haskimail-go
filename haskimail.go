@@ -8,7 +8,7 @@ import (
 
 const (
 	// Version — версия библиотеки.
-	Version = "1.0.0"
+	Version = "1.1.0"
 
 	// DefaultAPIURL — хост API по умолчанию.
 	DefaultAPIURL = "api.haskimail.ru"

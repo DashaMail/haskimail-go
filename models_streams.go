@@ -13,10 +13,12 @@ type SubscriptionManagementConfiguration struct {
 	UnsubscribeHandlingType string `json:"UnsubscribeHandlingType,omitempty"`
 }
 
-// MessageStream — канал отправки.
+// MessageStream — канал отправки. ID — числовой ID канала строкой («2081»),
+// его передают в Message.MessageStream. Имена JSON-полей совпадают с API:
+// при создании канала сервер читает ServerID с учётом регистра.
 type MessageStream struct {
-	ID                                  string                               `json:"Id,omitempty"`
-	ServerID                            int64                                `json:"ServerId,omitempty"`
+	ID                                  string                               `json:"ID,omitempty"`
+	ServerID                            int64                                `json:"ServerID,omitempty"`
 	Name                                string                               `json:"Name,omitempty"`
 	Description                         string                               `json:"Description,omitempty"`
 	MessageStreamType                   string                               `json:"MessageStreamType,omitempty"`
@@ -34,8 +36,9 @@ type MessageStreams struct {
 
 // MessageStreamArchiveResponse — результат архивации канала.
 type MessageStreamArchiveResponse struct {
-	ID                string `json:"Id"`
-	ServerID          int64  `json:"ServerId"`
+	ID                string `json:"ID"`
+	ServerID          int64  `json:"ServerID"`
+	ArchivedAt        *Time  `json:"ArchivedAt"`
 	ExpectedPurgeDate *Time  `json:"ExpectedPurgeDate"`
 }
 

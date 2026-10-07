@@ -38,33 +38,6 @@ type TemplateContent struct {
 	TextBody string `json:"TextBody,omitempty"`
 }
 
-// TemplateToValidate — шаблон для проверки.
-type TemplateToValidate struct {
-	Subject                    string `json:"Subject,omitempty"`
-	HTMLBody                   string `json:"HtmlBody,omitempty"`
-	TextBody                   string `json:"TextBody,omitempty"`
-	TestRenderModel            any    `json:"TestRenderModel,omitempty"`
-	InlineCSSForHTMLTestRender *bool  `json:"InlineCssForHtmlTestRender,omitempty"`
-	TemplateType               string `json:"TemplateType,omitempty"`
-	LayoutTemplate             string `json:"LayoutTemplate,omitempty"`
-}
-
-// TemplateValidationField — результат проверки одного поля шаблона.
-type TemplateValidationField struct {
-	ContentIsValid   bool     `json:"ContentIsValid"`
-	RenderedContent  string   `json:"RenderedContent"`
-	ValidationErrors []string `json:"ValidationErrors"`
-}
-
-// TemplateValidation — результат проверки шаблона.
-type TemplateValidation struct {
-	AllContentIsValid      bool                     `json:"AllContentIsValid"`
-	HTMLBody               *TemplateValidationField `json:"HtmlBody"`
-	TextBody               *TemplateValidationField `json:"TextBody"`
-	Subject                *TemplateValidationField `json:"Subject"`
-	SuggestedTemplateModel any                      `json:"SuggestedTemplateModel"`
-}
-
 // TemplatedMessage — письмо, отправляемое по шаблону.
 // Укажите TemplateID или TemplateAlias.
 type TemplatedMessage struct {
@@ -104,10 +77,11 @@ func (m *TemplatedMessage) AddMetadata(key, value string) {
 	m.Metadata[key] = value
 }
 
-// TemplatesPushRequest — запрос на копирование шаблонов между серверами.
+// TemplatesPushRequest — запрос на перенос шаблонов между серверами.
+// Имена полей — как в API: сервер читает их с учётом регистра.
 type TemplatesPushRequest struct {
-	SourceServerID      int64 `json:"SourceServerId"`
-	DestinationServerID int64 `json:"DestinationServerId"`
+	SourceServerID      int64 `json:"SourceServerID"`
+	DestinationServerID int64 `json:"DestinationServerID"`
 	PerformChanges      *bool `json:"PerformChanges,omitempty"`
 }
 

@@ -78,28 +78,6 @@ func TestDeliverMessage(t *testing.T) {
 	}
 }
 
-func TestBatchWithTemplatesWrapsMessages(t *testing.T) {
-	srv, c := newTestServer(t, 200, `[{"ErrorCode":0,"MessageID":"1"},{"ErrorCode":406,"Message":"inactive"}]`)
-	cl := NewClient("tok", WithBaseURL(host(srv)), WithInsecure())
-	rs, err := cl.DeliverMessagesWithTemplate(context.Background(), []TemplatedMessage{
-		{TemplateID: 5, From: "a@b.ru", To: "c@d.ru", TemplateModel: map[string]any{"name": "Иван"}},
-		{TemplateAlias: "welcome", From: "a@b.ru", To: "e@f.ru"},
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(rs) != 2 || rs[1].ErrorCode != 406 {
-		t.Fatalf("ответ: %+v", rs)
-	}
-	msgs, ok := c.body["Messages"].([]any)
-	if c.path != "/email/batchWithTemplates" || !ok || len(msgs) != 2 {
-		t.Fatalf("тело: %s", c.rawBody)
-	}
-	if msgs[0].(map[string]any)["TemplateId"] != float64(5) {
-		t.Fatalf("TemplateId: %s", c.rawBody)
-	}
-}
-
 func TestErrors(t *testing.T) {
 	cases := []struct {
 		status int

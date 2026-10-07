@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -47,7 +48,8 @@ func (t *Time) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		return fmt.Errorf("haskimail: дата должна быть строкой: %s", b)
 	}
-	if s == "" {
+	// Пустая дата MySQL — «даты нет», а не ошибка разбора.
+	if s == "" || strings.HasPrefix(s, "0000-00-00") {
 		return nil
 	}
 	parsed, err := ParseTime(s)
