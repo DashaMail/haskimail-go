@@ -41,6 +41,27 @@ client.DeliverMessageWithTemplate(ctx, &haskimail.TemplatedMessage{
 })
 ```
 
+### Пакетная отправка
+
+До 500 писем и 50 МБ за запрос. HTTP-ответ успешный, даже если часть писем отклонена, поэтому результат каждого письма проверяйте по `ErrorCode` в элементе ответа с тем же номером.
+
+```go
+results, err := client.DeliverMessages(ctx, []haskimail.Message{
+    {From: "от@домен.ru", To: "кому1@домен.ru", Subject: "Тема 1", TextBody: "Текст 1"},
+    {From: "от@домен.ru", To: "кому2@домен.ru", Subject: "Тема 2", TextBody: "Текст 2"},
+})
+if err != nil {
+    return err // не принят весь пакет: сеть, токен, больше 500 писем
+}
+for i, r := range results {
+    if r.ErrorCode != 0 {
+        log.Printf("письмо %d не принято: %d %s", i, r.ErrorCode, r.Message)
+    }
+}
+```
+
+Пакет по шаблонам — `client.DeliverMessagesWithTemplate(ctx, []haskimail.TemplatedMessage{…})`.
+
 ### Вложения
 
 ```go
@@ -123,7 +144,7 @@ case err != nil:                                    // сетевые ошибк
 
 ## Тесты
 
-Юнит-тесты (без сети, на `httptest`): проверяют все 50 методов (HTTP-метод, путь, query, тело, токен), сериализацию, ошибки, форматы дат, вложения и отмену по контексту.
+Юнит-тесты (без сети, на `httptest`): проверяют все 52 метода (HTTP-метод, путь, query, тело, токен), сериализацию, ошибки, форматы дат, вложения и отмену по контексту.
 
 ```bash
 go test -race ./...

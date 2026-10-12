@@ -18,9 +18,33 @@ func (c *Client) DeliverMessage(ctx context.Context, m *Message) (*MessageRespon
 	return do[MessageResponse](ctx, c.base, http.MethodPost, "/email", nil, m)
 }
 
+// DeliverMessages отправляет пакет писем: до 500 писем и 50 МБ за запрос.
+// Ошибки отдельных писем не возвращаются как error: результат каждого письма —
+// в элементе ответа с тем же номером, проверяйте его ErrorCode.
+func (c *Client) DeliverMessages(ctx context.Context, ms []Message) ([]MessageResponse, error) {
+	r, err := do[[]MessageResponse](ctx, c.base, http.MethodPost, "/email/batch", nil, ms)
+	if err != nil {
+		return nil, err
+	}
+	return *r, nil
+}
+
 // DeliverMessageWithTemplate отправляет письмо по шаблону.
 func (c *Client) DeliverMessageWithTemplate(ctx context.Context, m *TemplatedMessage) (*MessageResponse, error) {
 	return do[MessageResponse](ctx, c.base, http.MethodPost, "/email/withTemplate", nil, m)
+}
+
+// DeliverMessagesWithTemplate отправляет пакет писем по шаблонам. Ограничения
+// и разбор ответа — как у DeliverMessages.
+func (c *Client) DeliverMessagesWithTemplate(ctx context.Context, ms []TemplatedMessage) ([]MessageResponse, error) {
+	body := struct {
+		Messages []TemplatedMessage `json:"Messages"`
+	}{ms}
+	r, err := do[[]MessageResponse](ctx, c.base, http.MethodPost, "/email/batchWithTemplates", nil, body)
+	if err != nil {
+		return nil, err
+	}
+	return *r, nil
 }
 
 // ========== Отказы доставки ==========

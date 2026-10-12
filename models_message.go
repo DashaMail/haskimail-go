@@ -100,7 +100,7 @@ func FormatRecipientsMap(m map[string]string) string {
 	return FormatRecipients(rs...)
 }
 
-// Message — письмо для отправки через /email.
+// Message — письмо для отправки через /email и /email/batch.
 type Message struct {
 	MessageStream string            `json:"MessageStream,omitempty"`
 	From          string            `json:"From,omitempty"`

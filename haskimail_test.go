@@ -78,6 +78,50 @@ func TestDeliverMessage(t *testing.T) {
 	}
 }
 
+func TestBatch(t *testing.T) {
+	// HTTP 200, даже если часть писем отклонена: у отклонённого письма MessageID — null
+	resp := `[{"To":"c@d.ru","SubmittedAt":"2026-10-13 14:30:12","MessageID":"abc","ErrorCode":0,"Message":"OK"},` +
+		`{"To":"e@f.ru","SubmittedAt":"2026-10-13 14:30:12","MessageID":null,"ErrorCode":6,"Message":"Некорректный email-адрес получателя"}]`
+
+	srv, c := newTestServer(t, 200, resp)
+	cl := NewClient("tok", WithBaseURL(host(srv)), WithInsecure())
+	rs, err := cl.DeliverMessages(context.Background(), []Message{
+		{From: "a@b.ru", To: "c@d.ru", Subject: "1", TextBody: "1"},
+		{From: "a@b.ru", To: "e@f.ru", Subject: "2", TextBody: "2"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rs) != 2 || rs[0].MessageID != "abc" || rs[0].SubmittedAt == nil || rs[1].ErrorCode != 6 || rs[1].MessageID != "" {
+		t.Fatalf("ответ: %+v", rs)
+	}
+	// тело /email/batch — массив писем, без обёртки
+	if c.path != "/email/batch" || !strings.HasPrefix(string(c.rawBody), `[{"From":"a@b.ru"`) {
+		t.Fatalf("запрос: %s %s", c.path, c.rawBody)
+	}
+
+	srv, c = newTestServer(t, 200, resp)
+	cl = NewClient("tok", WithBaseURL(host(srv)), WithInsecure())
+	rs, err = cl.DeliverMessagesWithTemplate(context.Background(), []TemplatedMessage{
+		{TemplateID: 5, From: "a@b.ru", To: "c@d.ru", TemplateModel: map[string]string{"{{name}}": "Иван"}},
+		{TemplateAlias: "welcome", From: "a@b.ru", To: "e@f.ru"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rs) != 2 || rs[1].ErrorCode != 6 {
+		t.Fatalf("ответ: %+v", rs)
+	}
+	// тело /email/batchWithTemplates — объект {"Messages": [...]}
+	msgs, ok := c.body["Messages"].([]any)
+	if c.path != "/email/batchWithTemplates" || !ok || len(msgs) != 2 {
+		t.Fatalf("тело: %s", c.rawBody)
+	}
+	if msgs[0].(map[string]any)["TemplateId"] != float64(5) {
+		t.Fatalf("TemplateId: %s", c.rawBody)
+	}
+}
+
 func TestErrors(t *testing.T) {
 	cases := []struct {
 		status int

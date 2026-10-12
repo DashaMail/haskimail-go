@@ -21,8 +21,12 @@ func TestAllRoutes(t *testing.T) {
 	routes := []route{
 		// Отправка
 		{"DeliverMessage", "POST", "/email", true, false, false, func(c *Client, _ *AccountClient) error { return e(c.DeliverMessage(ctx, &Message{From: "a"})) }},
+		{"DeliverMessages", "POST", "/email/batch", true, false, false, func(c *Client, _ *AccountClient) error { return e(c.DeliverMessages(ctx, []Message{{From: "a"}})) }},
 		{"DeliverMessageWithTemplate", "POST", "/email/withTemplate", true, false, false, func(c *Client, _ *AccountClient) error {
 			return e(c.DeliverMessageWithTemplate(ctx, &TemplatedMessage{TemplateID: 1}))
+		}},
+		{"DeliverMessagesWithTemplate", "POST", "/email/batchWithTemplates", true, false, false, func(c *Client, _ *AccountClient) error {
+			return e(c.DeliverMessagesWithTemplate(ctx, []TemplatedMessage{{TemplateID: 1}}))
 		}},
 		// Отказы
 		{"GetBounces", "GET", "/bounces", false, true, false, func(c *Client, _ *AccountClient) error { return e(c.GetBounces(ctx, p)) }},
@@ -113,13 +117,18 @@ func TestAllRoutes(t *testing.T) {
 			}
 		}
 	}
-	if len(routes) != 50 {
-		t.Errorf("ожидалось 50 маршрутов (38 серверных + 12 аккаунта), в таблице %d", len(routes))
+	if len(routes) != 52 {
+		t.Errorf("ожидалось 52 маршрута (40 серверных + 12 аккаунта), в таблице %d", len(routes))
 	}
 
 	for _, r := range routes {
 		t.Run(r.name, func(t *testing.T) {
-			srv, c := newTestServer(t, 200, `{}`)
+			// Ответ "{}" подходит для объектов; для пакетных методов нужен массив.
+			resp := `{}`
+			if r.name == "DeliverMessages" || r.name == "DeliverMessagesWithTemplate" {
+				resp = `[]`
+			}
+			srv, c := newTestServer(t, 200, resp)
 			cl := NewClient("srv-tok", WithBaseURL(host(srv)), WithInsecure())
 			ac := NewAccountClient("acc-tok", WithBaseURL(host(srv)), WithInsecure())
 			if err := r.call(cl, ac); err != nil {

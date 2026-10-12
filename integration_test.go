@@ -359,6 +359,26 @@ func TestIntegrationSend(t *testing.T) {
 		r = must(t, e, r, err)
 		t.Logf("MessageID=%s", r.MessageID)
 	})
+
+	t.Run("Batch", func(t *testing.T) {
+		rs, err := c.DeliverMessages(ctxT(t), []Message{
+			{From: e.sender, To: e.recipient, Subject: "Go SDK: пакет 1", TextBody: "1"},
+			{From: e.sender, To: e.recipient, Subject: "Go SDK: пакет 2", TextBody: "2"},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		checkModel[MessageResponse](t, e.rec)
+		if len(rs) != 2 {
+			t.Fatalf("ожидалось 2 результата, получено %d", len(rs))
+		}
+		for i, r := range rs {
+			if r.MessageID == "" || r.ErrorCode != 0 {
+				t.Errorf("[%d] ответ: %+v", i, r)
+			}
+			t.Logf("[%d] код %d, %s", i, r.ErrorCode, r.MessageID)
+		}
+	})
 }
 
 // ===== API аккаунта: только чтение =====
