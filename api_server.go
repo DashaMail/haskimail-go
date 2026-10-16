@@ -101,6 +101,13 @@ func (c *Client) DeleteTemplateByAlias(ctx context.Context, alias string) (*Requ
 	return do[RequestResponse](ctx, c.base, http.MethodDelete, "/templates/"+url.PathEscape(alias), nil, nil)
 }
 
+// ValidateTemplate проверяет шаблон без сохранения: подставляет TestRenderModel так же,
+// как TemplateModel при отправке, и находит фрагменты {{…}}, оставшиеся без значения.
+// Ошибки в шаблоне не возвращаются как error — они в ответе (AllContentIsValid).
+func (c *Client) ValidateTemplate(ctx context.Context, t *TemplateToValidate) (*TemplateValidation, error) {
+	return do[TemplateValidation](ctx, c.base, http.MethodPost, "/templates/validate", nil, t)
+}
+
 // ========== Исходящие сообщения ==========
 
 // GetMessages ищет исходящие сообщения.

@@ -42,6 +42,9 @@ func TestAllRoutes(t *testing.T) {
 		{"GetTemplates", "GET", "/templates", false, true, false, func(c *Client, _ *AccountClient) error { return e(c.GetTemplates(ctx, p)) }},
 		{"DeleteTemplate", "DELETE", "/templates/7", false, false, false, func(c *Client, _ *AccountClient) error { return e(c.DeleteTemplate(ctx, 7)) }},
 		{"DeleteTemplateByAlias", "DELETE", "/templates/welcome", false, false, false, func(c *Client, _ *AccountClient) error { return e(c.DeleteTemplateByAlias(ctx, "welcome")) }},
+		{"ValidateTemplate", "POST", "/templates/validate", true, false, false, func(c *Client, _ *AccountClient) error {
+			return e(c.ValidateTemplate(ctx, &TemplateToValidate{HTMLBody: "<p>{{name}}</p>"}))
+		}},
 		// Исходящие
 		{"GetMessages", "GET", "/messages", false, true, false, func(c *Client, _ *AccountClient) error { return e(c.GetMessages(ctx, p)) }},
 		{"GetMessageDetails", "GET", "/messages/m1/details", false, false, false, func(c *Client, _ *AccountClient) error { return e(c.GetMessageDetails(ctx, "m1")) }},
@@ -117,8 +120,8 @@ func TestAllRoutes(t *testing.T) {
 			}
 		}
 	}
-	if len(routes) != 52 {
-		t.Errorf("ожидалось 52 маршрута (40 серверных + 12 аккаунта), в таблице %d", len(routes))
+	if len(routes) != 53 {
+		t.Errorf("ожидалось 53 маршрута (41 серверный + 12 аккаунта), в таблице %d", len(routes))
 	}
 
 	for _, r := range routes {

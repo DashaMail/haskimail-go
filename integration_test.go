@@ -191,6 +191,16 @@ func TestIntegrationServerRead(t *testing.T) {
 		o, err := c.GetTemplates(ctxT(t), page())
 		must(t, e, o, err)
 	})
+	t.Run("ValidateTemplate", func(t *testing.T) {
+		v, err := c.ValidateTemplate(ctxT(t), &TemplateToValidate{
+			Subject: "Заказ {{order}}", HTMLBody: "<p>{{name}}: {{track}}</p>",
+			TestRenderModel: map[string]string{"{{name}}": "Иван", "{{order}}": "1042"},
+		})
+		v = must(t, e, v, err)
+		if v.AllContentIsValid || v.HTMLBody == nil || len(v.HTMLBody.ValidationErrors) != 1 || v.Subject.RenderedContent != "Заказ 1042" {
+			t.Errorf("ответ: %+v", v)
+		}
+	})
 	t.Run("Webhooks", func(t *testing.T) {
 		o, err := c.GetWebhooks(ctxT(t), nil)
 		must(t, e, o, err)

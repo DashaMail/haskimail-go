@@ -100,3 +100,27 @@ func TestContractStatsAndZeroDate(t *testing.T) {
 		t.Fatalf("пустая дата MySQL должна стать нулевой: %v", s.Suppressions[0].CreatedAt)
 	}
 }
+
+// Ответ POST /templates/validate (haski/api/template_validate.php): разбор в строгом режиме,
+// чтобы новое поле ответа не терялось молча.
+func TestContractTemplateValidation(t *testing.T) {
+	body := `{"AllContentIsValid": false, "Subject": {"ContentIsValid": true, "ValidationErrors": [], "RenderedContent": "Заказ 1042 оформлен"}, "HtmlBody": {"ContentIsValid": false, "ValidationErrors": [{"Message": "Нет значения для {{track}}: в TestRenderModel нет такого ключа", "Line": 2, "CharacterPosition": 16}], "RenderedContent": "<p>Здравствуйте, Иван!</p>\n<p>Трек-номер: {{track}}</p>"}, "TextBody": {"ContentIsValid": true, "ValidationErrors": [], "RenderedContent": "Здравствуйте, Иван! Заказ 1042 оформлен."}, "SuggestedTemplateModel": {"{{order}}": "1042", "{{name}}": "Иван", "{{track}}": "track_Value"}}`
+	var v TemplateValidation
+	dec := json.NewDecoder(strings.NewReader(body))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&v); err != nil {
+		t.Fatal(err)
+	}
+	if v.AllContentIsValid || v.Subject == nil || !v.Subject.ContentIsValid || v.Subject.RenderedContent != "Заказ 1042 оформлен" {
+		t.Fatalf("Subject: %+v", v.Subject)
+	}
+	if v.HTMLBody == nil || v.HTMLBody.ContentIsValid || len(v.HTMLBody.ValidationErrors) != 1 {
+		t.Fatalf("HtmlBody: %+v", v.HTMLBody)
+	}
+	if e := v.HTMLBody.ValidationErrors[0]; e.Line != 2 || e.CharacterPosition != 16 || !strings.Contains(e.Message, "{{track}}") {
+		t.Fatalf("ошибка: %+v", e)
+	}
+	if v.SuggestedTemplateModel["{{track}}"] != "track_Value" || v.SuggestedTemplateModel["{{name}}"] != "Иван" {
+		t.Fatalf("SuggestedTemplateModel: %v", v.SuggestedTemplateModel)
+	}
+}

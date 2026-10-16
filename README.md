@@ -41,6 +41,27 @@ client.DeliverMessageWithTemplate(ctx, &haskimail.TemplatedMessage{
 })
 ```
 
+### Проверка шаблона
+
+Показывает, что получит получатель, и находит фрагменты `{{…}}`, для которых в модели нет значения. Ничего не сохраняет и не отправляет.
+
+```go
+v, err := client.ValidateTemplate(ctx, &haskimail.TemplateToValidate{
+    Subject:         "Заказ {{order}} оформлен",
+    HTMLBody:        "<p>Здравствуйте, {{name}}!</p>",
+    TestRenderModel: map[string]string{"{{name}}": "Иван", "{{order}}": "1042"},
+})
+if err != nil {
+    return err
+}
+if !v.AllContentIsValid {
+    for _, e := range v.HTMLBody.ValidationErrors {
+        log.Printf("строка %d, позиция %d: %s", e.Line, e.CharacterPosition, e.Message)
+    }
+}
+fmt.Println(v.HTMLBody.RenderedContent)
+```
+
 ### Пакетная отправка
 
 До 500 писем и 50 МБ за запрос. HTTP-ответ успешный, даже если часть писем отклонена, поэтому результат каждого письма проверяйте по `ErrorCode` в элементе ответа с тем же номером.
@@ -144,7 +165,7 @@ case err != nil:                                    // сетевые ошибк
 
 ## Тесты
 
-Юнит-тесты (без сети, на `httptest`): проверяют все 52 метода (HTTP-метод, путь, query, тело, токен), сериализацию, ошибки, форматы дат, вложения и отмену по контексту.
+Юнит-тесты (без сети, на `httptest`): проверяют все 53 метода (HTTP-метод, путь, query, тело, токен), сериализацию, ошибки, форматы дат, вложения и отмену по контексту.
 
 ```bash
 go test -race ./...

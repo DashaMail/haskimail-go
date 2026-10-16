@@ -38,6 +38,44 @@ type TemplateContent struct {
 	TextBody string `json:"TextBody,omitempty"`
 }
 
+// TemplateToValidate — шаблон для проверки (ValidateTemplate). Нужен хотя бы один из
+// Subject, HTMLBody, TextBody. TestRenderModel подставляется буквально, как TemplateModel
+// при отправке: ключ — фрагмент вместе с разделителями, map[string]string{"{{name}}": "Иван"}.
+type TemplateToValidate struct {
+	Subject         string `json:"Subject,omitempty"`
+	HTMLBody        string `json:"HtmlBody,omitempty"`
+	TextBody        string `json:"TextBody,omitempty"`
+	TestRenderModel any    `json:"TestRenderModel,omitempty"`
+}
+
+// TemplateValidationError — фрагмент {{…}} без значения или «{{» без пары. Line и
+// CharacterPosition считаются с 1 в исходном тексте; 0 — фрагмент принесло значение модели.
+type TemplateValidationError struct {
+	Message           string `json:"Message"`
+	Line              int    `json:"Line"`
+	CharacterPosition int    `json:"CharacterPosition"`
+}
+
+// TemplateValidationField — результат проверки одной части шаблона.
+type TemplateValidationField struct {
+	ContentIsValid   bool                      `json:"ContentIsValid"`
+	ValidationErrors []TemplateValidationError `json:"ValidationErrors"`
+	// RenderedContent — часть после подстановки, как её получит получатель.
+	RenderedContent string `json:"RenderedContent"`
+}
+
+// TemplateValidation — результат проверки шаблона. Части, которой не было в запросе,
+// нет и в ответе (nil).
+type TemplateValidation struct {
+	AllContentIsValid bool                     `json:"AllContentIsValid"`
+	Subject           *TemplateValidationField `json:"Subject,omitempty"`
+	HTMLBody          *TemplateValidationField `json:"HtmlBody,omitempty"`
+	TextBody          *TemplateValidationField `json:"TextBody,omitempty"`
+	// SuggestedTemplateModel — все {{…}} шаблона с значениями из TestRenderModel
+	// или заглушками «имя_Value».
+	SuggestedTemplateModel map[string]string `json:"SuggestedTemplateModel"`
+}
+
 // TemplatedMessage — письмо, отправляемое по шаблону.
 // Укажите TemplateID или TemplateAlias.
 type TemplatedMessage struct {
