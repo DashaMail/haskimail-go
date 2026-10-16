@@ -167,6 +167,26 @@ func (c *Client) GetOpenStats(ctx context.Context, p *Params) (*OutboundOpenStat
 	return do[OutboundOpenStats](ctx, c.base, http.MethodGet, "/stats/opens", p, nil)
 }
 
+// GetOpenPlatformStats возвращает открытия по платформам: по дням и итог за период.
+func (c *Client) GetOpenPlatformStats(ctx context.Context, p *Params) (*OutboundOpenPlatformStats, error) {
+	return do[OutboundOpenPlatformStats](ctx, c.base, http.MethodGet, "/stats/opens/platforms", p, nil)
+}
+
+// GetOpenEmailClientStats возвращает открытия по почтовым клиентам и веб-почтам.
+func (c *Client) GetOpenEmailClientStats(ctx context.Context, p *Params) (*OutboundOpenEmailClientStats, error) {
+	return do[OutboundOpenEmailClientStats](ctx, c.base, http.MethodGet, "/stats/opens/emailclients", p, nil)
+}
+
+// GetClickBrowserStats возвращает клики по браузерам.
+func (c *Client) GetClickBrowserStats(ctx context.Context, p *Params) (*OutboundClickBrowserStats, error) {
+	return do[OutboundClickBrowserStats](ctx, c.base, http.MethodGet, "/stats/clicks/browserfamilies", p, nil)
+}
+
+// GetClickPlatformStats возвращает клики по платформам: по дням и итог за период.
+func (c *Client) GetClickPlatformStats(ctx context.Context, p *Params) (*OutboundClickPlatformStats, error) {
+	return do[OutboundClickPlatformStats](ctx, c.base, http.MethodGet, "/stats/clicks/platforms", p, nil)
+}
+
 // GetClickStats возвращает клики по дням.
 func (c *Client) GetClickStats(ctx context.Context, p *Params) (*OutboundClickStats, error) {
 	return do[OutboundClickStats](ctx, c.base, http.MethodGet, "/stats/clicks", p, nil)

@@ -1,5 +1,10 @@
 package haskimail
 
+import (
+	"encoding/json"
+	"fmt"
+)
+
 // OutboundStats — сводная статистика исходящих писем.
 type OutboundStats struct {
 	Sent                  int     `json:"Sent"`
@@ -78,4 +83,104 @@ type (
 	OutboundSpamStats   = DayStats[SpamStat]
 	OutboundOpenStats   = DayStats[OpenStat]
 	OutboundClickStats  = DayStats[ClickStat]
+)
+
+// PlatformStat — открытия или клики за день по платформам: Desktop — компьютер,
+// Mobile — телефон или планшет, WebMail — веб-почта (Gmail, Mail.ru, Яндекс, Рамблер),
+// Unknown — не определилось, в том числе боты.
+type PlatformStat struct {
+	Date    *Time `json:"Date"`
+	Desktop int   `json:"Desktop"`
+	Mobile  int   `json:"Mobile"`
+	WebMail int   `json:"WebMail"`
+	Unknown int   `json:"Unknown"`
+}
+
+// PlatformStats — открытия или клики по платформам: по дням и итог за период.
+type PlatformStats struct {
+	Days    []PlatformStat `json:"Days"`
+	Desktop int            `json:"Desktop"`
+	Mobile  int            `json:"Mobile"`
+	WebMail int            `json:"WebMail"`
+	Unknown int            `json:"Unknown"`
+}
+
+// Псевдонимы для разбивки по платформам.
+type (
+	OutboundOpenPlatformStats  = PlatformStats
+	OutboundClickPlatformStats = PlatformStats
+)
+
+// NamedCountStat — счётчики за день по названиям: почтовым клиентам или браузерам.
+// В JSON названия — ключи объекта рядом с Date.
+type NamedCountStat struct {
+	Date   *Time
+	Counts map[string]int
+}
+
+// UnmarshalJSON разбирает день: Date — дата, остальные ключи — названия со счётчиками.
+func (s *NamedCountStat) UnmarshalJSON(b []byte) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	date, counts, err := splitNamedCounts(raw, "Date")
+	if err != nil {
+		return err
+	}
+	s.Counts = counts
+	if date != nil {
+		s.Date = new(Time)
+		if err := json.Unmarshal(date, s.Date); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// NamedCountStats — открытия по почтовым клиентам или клики по браузерам: по дням
+// и итог за период (Totals). В JSON итоги — ключи объекта рядом с Days.
+type NamedCountStats struct {
+	Days   []NamedCountStat
+	Totals map[string]int
+}
+
+// UnmarshalJSON разбирает ответ: Days — дни, остальные ключи — итоги по названиям.
+func (s *NamedCountStats) UnmarshalJSON(b []byte) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	days, totals, err := splitNamedCounts(raw, "Days")
+	if err != nil {
+		return err
+	}
+	s.Totals = totals
+	s.Days = nil
+	if days != nil {
+		return json.Unmarshal(days, &s.Days)
+	}
+	return nil
+}
+
+// splitNamedCounts отделяет служебный ключ (Date или Days) от счётчиков по названиям.
+func splitNamedCounts(raw map[string]json.RawMessage, key string) (json.RawMessage, map[string]int, error) {
+	counts := make(map[string]int, len(raw))
+	for name, value := range raw {
+		if name == key {
+			continue
+		}
+		var n int
+		if err := json.Unmarshal(value, &n); err != nil {
+			return nil, nil, fmt.Errorf("haskimail: счётчик %q: %w", name, err)
+		}
+		counts[name] = n
+	}
+	return raw[key], counts, nil
+}
+
+// Псевдонимы для разбивки по названиям.
+type (
+	OutboundOpenEmailClientStats = NamedCountStats
+	OutboundClickBrowserStats    = NamedCountStats
 )

@@ -124,3 +124,34 @@ func TestContractTemplateValidation(t *testing.T) {
 		t.Fatalf("SuggestedTemplateModel: %v", v.SuggestedTemplateModel)
 	}
 }
+
+// Ответы /stats/opens/platforms и /stats/opens/emailclients (haski/api/functions/stats.php)
+func TestContractBreakdownStats(t *testing.T) {
+	var p PlatformStats
+	dec := json.NewDecoder(strings.NewReader(`{"Days":[{"Date":"2026-10-01","Desktop":18,"Mobile":21,"WebMail":5,"Unknown":0}],"Desktop":18,"Mobile":21,"WebMail":5,"Unknown":0}`))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&p); err != nil {
+		t.Fatal(err)
+	}
+	if len(p.Days) != 1 || p.Days[0].Mobile != 21 || p.Days[0].Date == nil || p.WebMail != 5 {
+		t.Fatalf("платформы: %+v", p)
+	}
+
+	var c NamedCountStats
+	body := `{"Days":[{"Date":"2026-10-01","Apple Mail":17,"Gmail":5},{"Date":"2026-10-02","Gmail":6}],"Apple Mail":17,"Gmail":11}`
+	if err := json.Unmarshal([]byte(body), &c); err != nil {
+		t.Fatal(err)
+	}
+	if len(c.Days) != 2 || c.Days[1].Counts["Gmail"] != 6 || c.Days[0].Date == nil || c.Days[0].Date.Day() != 1 {
+		t.Fatalf("дни: %+v", c.Days)
+	}
+	if len(c.Totals) != 2 || c.Totals["Apple Mail"] != 17 || c.Totals["Gmail"] != 11 {
+		t.Fatalf("итоги: %v", c.Totals)
+	}
+	if _, ok := c.Days[0].Counts["Date"]; ok {
+		t.Fatal("Date попал в счётчики")
+	}
+	if err := json.Unmarshal([]byte(`{"Days":[],"Gmail":"x"}`), &c); err == nil {
+		t.Fatal("нечисловой счётчик должен давать ошибку")
+	}
+}

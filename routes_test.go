@@ -59,6 +59,10 @@ func TestAllRoutes(t *testing.T) {
 		{"GetSpamStats", "GET", "/stats/spam", false, true, false, func(c *Client, _ *AccountClient) error { return e(c.GetSpamStats(ctx, p)) }},
 		{"GetOpenStats", "GET", "/stats/opens", false, true, false, func(c *Client, _ *AccountClient) error { return e(c.GetOpenStats(ctx, p)) }},
 		{"GetClickStats", "GET", "/stats/clicks", false, true, false, func(c *Client, _ *AccountClient) error { return e(c.GetClickStats(ctx, p)) }},
+		{"GetOpenPlatformStats", "GET", "/stats/opens/platforms", false, true, false, func(c *Client, _ *AccountClient) error { return e(c.GetOpenPlatformStats(ctx, p)) }},
+		{"GetOpenEmailClientStats", "GET", "/stats/opens/emailclients", false, true, false, func(c *Client, _ *AccountClient) error { return e(c.GetOpenEmailClientStats(ctx, p)) }},
+		{"GetClickBrowserStats", "GET", "/stats/clicks/browserfamilies", false, true, false, func(c *Client, _ *AccountClient) error { return e(c.GetClickBrowserStats(ctx, p)) }},
+		{"GetClickPlatformStats", "GET", "/stats/clicks/platforms", false, true, false, func(c *Client, _ *AccountClient) error { return e(c.GetClickPlatformStats(ctx, p)) }},
 		// Вебхуки
 		{"GetWebhooks", "GET", "/webhooks", false, true, false, func(c *Client, _ *AccountClient) error { return e(c.GetWebhooks(ctx, p)) }},
 		{"GetWebhook", "GET", "/webhooks/3", false, false, false, func(c *Client, _ *AccountClient) error { return e(c.GetWebhook(ctx, 3)) }},
@@ -120,8 +124,8 @@ func TestAllRoutes(t *testing.T) {
 			}
 		}
 	}
-	if len(routes) != 53 {
-		t.Errorf("ожидалось 53 маршрута (41 серверный + 12 аккаунта), в таблице %d", len(routes))
+	if len(routes) != 57 {
+		t.Errorf("ожидалось 57 маршрутов (45 серверных + 12 аккаунта), в таблице %d", len(routes))
 	}
 
 	for _, r := range routes {

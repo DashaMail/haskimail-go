@@ -62,6 +62,20 @@ if !v.AllContentIsValid {
 fmt.Println(v.HTMLBody.RenderedContent)
 ```
 
+### Статистика по платформам, клиентам и браузерам
+
+```go
+platforms, err := client.GetOpenPlatformStats(ctx, haskimail.NewParams().String("fromdate", "2026-10-01"))
+// platforms.Desktop, Mobile, WebMail, Unknown — за период; platforms.Days — по дням
+
+clients, err := client.GetOpenEmailClientStats(ctx, nil)
+for name, count := range clients.Totals { // за период, например "Apple Mail", "Gmail"
+    fmt.Println(name, count)
+}
+// clients.Days[i].Counts — то же по дням; браузеры кликов — GetClickBrowserStats,
+// платформы кликов — GetClickPlatformStats
+```
+
 ### Пакетная отправка
 
 До 500 писем и 50 МБ за запрос. HTTP-ответ успешный, даже если часть писем отклонена, поэтому результат каждого письма проверяйте по `ErrorCode` в элементе ответа с тем же номером.
@@ -165,7 +179,7 @@ case err != nil:                                    // сетевые ошибк
 
 ## Тесты
 
-Юнит-тесты (без сети, на `httptest`): проверяют все 53 метода (HTTP-метод, путь, query, тело, токен), сериализацию, ошибки, форматы дат, вложения и отмену по контексту.
+Юнит-тесты (без сети, на `httptest`): проверяют все 57 методов (HTTP-метод, путь, query, тело, токен), сериализацию, ошибки, форматы дат, вложения и отмену по контексту.
 
 ```bash
 go test -race ./...

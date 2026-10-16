@@ -218,6 +218,24 @@ func TestIntegrationServerRead(t *testing.T) {
 		"Spam":     func(t *testing.T, ctx context.Context) { v, err := c.GetSpamStats(ctx, nil); must(t, e, v, err) },
 		"Opens":    func(t *testing.T, ctx context.Context) { v, err := c.GetOpenStats(ctx, nil); must(t, e, v, err) },
 		"Clicks":   func(t *testing.T, ctx context.Context) { v, err := c.GetClickStats(ctx, nil); must(t, e, v, err) },
+		"OpenPlatforms": func(t *testing.T, ctx context.Context) {
+			v, err := c.GetOpenPlatformStats(ctx, nil)
+			must(t, e, v, err)
+		},
+		"OpenEmailClients": func(t *testing.T, ctx context.Context) {
+			v, err := c.GetOpenEmailClientStats(ctx, nil)
+			v = must(t, e, v, err)
+			t.Logf("клиенты за период: %v", v.Totals)
+		},
+		"ClickBrowsers": func(t *testing.T, ctx context.Context) {
+			v, err := c.GetClickBrowserStats(ctx, nil)
+			v = must(t, e, v, err)
+			t.Logf("браузеры за период: %v", v.Totals)
+		},
+		"ClickPlatforms": func(t *testing.T, ctx context.Context) {
+			v, err := c.GetClickPlatformStats(ctx, nil)
+			must(t, e, v, err)
+		},
 	}
 	for name, call := range stats {
 		t.Run("Stats/"+name, func(t *testing.T) { call(t, ctxT(t)) })
